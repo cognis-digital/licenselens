@@ -36,3 +36,4 @@
 2025-09-29T16:58:38  chore: routine maintenance
 2026-01-19T11:15:45  docs: clarify usage notes
 2026-05-28T18:32:52  test: add edge case
+2024-06-15T14:58:38  refactor(fixtures): trim whitespace in parsed fields
