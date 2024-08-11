@@ -39,3 +39,4 @@
 2024-06-15T14:58:38  refactor(fixtures): trim whitespace in parsed fields
 2024-06-21T09:15:45  style(output): dedupe overlapping findings
 2024-07-16T16:32:52  feat(scan): add a dry-run flag
+2024-08-11T11:49:59  docs(rules): improve error messages with context
