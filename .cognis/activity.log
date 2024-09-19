@@ -42,3 +42,4 @@
 2024-08-11T11:49:59  docs(rules): improve error messages with context
 2024-08-18T18:06:06  docs(rules): improve error messages with context
 2024-09-12T13:23:13  chore: tune defaults
+2024-09-19T08:40:20  feat(scoring): add a fast path for the common case
