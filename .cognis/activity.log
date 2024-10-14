@@ -43,3 +43,4 @@
 2024-08-18T18:06:06  docs(rules): improve error messages with context
 2024-09-12T13:23:13  chore: tune defaults
 2024-09-19T08:40:20  feat(scoring): add a fast path for the common case
+2024-10-14T15:57:27  docs(io): document the config keys
