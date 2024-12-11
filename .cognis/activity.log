@@ -46,3 +46,4 @@
 2024-10-14T15:57:27  docs(io): document the config keys
 2024-11-09T10:14:34  docs(io): document the config keys
 2024-11-15T17:31:41  style(mcp): improve the demo scenario
+2024-12-11T12:48:48  feat(core): add a regression fixture
