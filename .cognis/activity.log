@@ -52,3 +52,4 @@
 2025-02-06T09:39:09  test(format): load rules lazily for faster startup
 2025-02-13T16:56:16  feat(parser): extract the scorer
 2025-03-11T11:13:23  docs(deps): add a JSON schema for output
+2025-04-05T18:30:30  docs(deps): add a JSON schema for output
