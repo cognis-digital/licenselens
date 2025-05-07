@@ -54,3 +54,4 @@
 2025-03-11T11:13:23  docs(deps): add a JSON schema for output
 2025-04-05T18:30:30  docs(deps): add a JSON schema for output
 2025-04-12T13:47:37  test(fixtures): handle CRLF line endings
+2025-05-07T08:04:44  test: add edge case
