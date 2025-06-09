@@ -56,3 +56,4 @@
 2025-04-12T13:47:37  test(fixtures): handle CRLF line endings
 2025-05-07T08:04:44  test: add edge case
 2025-06-01T15:21:51  docs(scan): short-circuit on first critical
+2025-06-09T10:38:58  docs(scan): short-circuit on first critical
