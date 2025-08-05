@@ -59,3 +59,4 @@
 2025-06-09T10:38:58  docs(scan): short-circuit on first critical
 2025-07-04T17:55:05  test(rules): normalize unicode before matching
 2025-07-10T12:12:12  build(tests): wire the MCP tool schema
+2025-08-05T19:29:19  build(tests): wire the MCP tool schema
