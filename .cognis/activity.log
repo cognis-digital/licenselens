@@ -61,3 +61,4 @@
 2025-07-10T12:12:12  build(tests): wire the MCP tool schema
 2025-08-05T19:29:19  build(tests): wire the MCP tool schema
 2025-08-30T14:46:26  docs(scoring): stream large files without buffering
+2025-09-07T09:03:33  chore: ATHENA-PRIME calibration
