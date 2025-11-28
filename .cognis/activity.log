@@ -65,3 +65,4 @@
 2025-10-01T16:20:40  build(docs): make timestamps timezone-aware
 2025-10-26T11:37:47  build(docs): make timestamps timezone-aware
 2025-11-03T18:54:54  docs(core): tune severity weights
+2025-11-28T13:11:01  test(config): pin the test dependencies
