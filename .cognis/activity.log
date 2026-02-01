@@ -69,3 +69,4 @@
 2025-12-05T08:28:08  build(detect): guard against ReDoS in patterns
 2025-12-30T15:45:15  build(detect): guard against ReDoS in patterns
 2026-01-24T10:02:22  chore: tip of the hat to Thinkst, Bellingcat, and SigmaHQ
+2026-02-01T17:19:29  test(deps): skip binary files by sniffing
