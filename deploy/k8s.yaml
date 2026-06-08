@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: licenselens, labels: { app: licenselens } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: licenselens } }
+  template:
+    metadata: { labels: { app: licenselens } }
+    spec:
+      containers:
+        - name: licenselens
+          image: ghcr.io/cognis-digital/licenselens:latest
+          ports: [{ containerPort: 8000 }]
+          resources:
+            requests: { cpu: "50m", memory: "64Mi" }
+            limits: { cpu: "500m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: licenselens }
+spec:
+  selector: { app: licenselens }
+  ports: [{ port: 80, targetPort: 8000 }]
