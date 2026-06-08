@@ -1,38 +1,116 @@
-"""LICENSELENS command-line interface."""
+"""Command-line interface for LICENSELENS.
+
+Subcommands:
+  scan   Audit dependency licenses against a policy and gate the build.
+  sbom   Emit a CycloneDX-style SBOM for the dependency set.
+
+Global flags: --version, --format {table,json}.
+Exit codes: 0 = gate passed, 1 = gate failed (forbid/unknown), 2 = usage/IO error.
+"""
+
 from __future__ import annotations
-import argparse, sys
-from licenselens.core import scan, to_json, TOOL_NAME, TOOL_VERSION
 
-def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="licenselens", description="LICENSELENS — Cognis Neural Suite")
-    ap.add_argument("--version", action="version", version=f"{TOOL_NAME} {TOOL_VERSION}")
-    sub = ap.add_subparsers(dest="cmd")
-    s = sub.add_parser("scan", help="scan a file or directory")
-    s.add_argument("target")
-    s.add_argument("--format", choices=["table", "json"], default="table")
-    s.add_argument("--fail-on", choices=["critical", "high", "medium", "low"], default=None)
-    sub.add_parser("mcp", help="run as an MCP server")
-    args = ap.parse_args(argv)
+import argparse
+import json
+import sys
+from typing import List, Optional
 
-    if args.cmd == "mcp":
-        from licenselens.mcp_server import serve
-        return serve()
-    if args.cmd == "scan":
-        res = scan(args.target)
-        if args.format == "json":
-            print(to_json(res))
-        else:
-            if not res.findings:
-                print(f"[{TOOL_NAME}] no findings in {args.target}")
-            for f in res.findings:
-                print(f"  [{f.severity.upper():8}] {f.id}  {f.title}  ({f.where})")
-            print(f"\n{len(res.findings)} findings · risk score {res.score} · {res.elapsed_ms}ms")
-        order = {"critical": 4, "high": 3, "medium": 2, "low": 1}
-        if args.fail_on and any(order.get(f.severity, 0) >= order[args.fail_on] for f in res.findings):
-            return 2
-        return 0
-    ap.print_help()
+from . import TOOL_NAME, TOOL_VERSION
+from .core import DEFAULT_POLICY, build_sbom, scan_project
+
+_RISK_GLYPH = {"allow": "OK ", "warn": "WARN", "forbid": "FAIL", "unknown": "????"}
+
+
+def _render_scan_table(result) -> str:
+    lines = []
+    name_w = max([len(f.name) for f in result.findings] + [4])
+    ver_w = max([len(f.version) for f in result.findings] + [7])
+    lic_w = max([len(f.license) for f in result.findings] + [7])
+    header = f"{'RISK':<4}  {'NAME':<{name_w}}  {'VERSION':<{ver_w}}  {'LICENSE':<{lic_w}}  SOURCE"
+    lines.append(header)
+    lines.append("-" * len(header))
+    for f in result.findings:
+        lines.append(
+            f"{_RISK_GLYPH.get(f.risk, '????'):<4}  "
+            f"{f.name:<{name_w}}  {f.version:<{ver_w}}  {f.license:<{lic_w}}  {f.source}"
+        )
+    c = result.counts
+    lines.append("")
+    lines.append(
+        f"summary: {c['allow']} allowed, {c['warn']} warn, "
+        f"{c['forbid']} forbidden, {c['unknown']} unknown"
+    )
+    lines.append("gate: PASS" if result.passed else "gate: FAIL")
+    return "\n".join(lines)
+
+
+def _cmd_scan(args) -> int:
+    try:
+        result = scan_project(args.requirements, policy=DEFAULT_POLICY)
+    except OSError as exc:
+        print(f"error: cannot read {args.requirements}: {exc}", file=sys.stderr)
+        return 2
+    if args.format == "json":
+        print(json.dumps(result.as_dict(), indent=2))
+    else:
+        print(_render_scan_table(result))
+    return 0 if result.passed else 1
+
+
+def _cmd_sbom(args) -> int:
+    try:
+        result = scan_project(args.requirements, policy=DEFAULT_POLICY)
+    except OSError as exc:
+        print(f"error: cannot read {args.requirements}: {exc}", file=sys.stderr)
+        return 2
+    sbom = build_sbom(result)
+    if args.format == "table":
+        # A SBOM is structured data; table mode prints a compact component list.
+        lines = [f"CycloneDX {sbom['specVersion']} - {len(sbom['components'])} components"]
+        for comp in sbom["components"]:
+            lic = comp["licenses"][0]["license"]["id"]
+            lines.append(f"  {comp['name']} {comp['version']}  ({lic})  {comp['purl']}")
+        print("\n".join(lines))
+    else:
+        print(json.dumps(sbom, indent=2))
     return 0
 
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog=TOOL_NAME,
+        description="Dependency license + SBOM gate for CI (stdlib only, zero install).",
+    )
+    parser.add_argument(
+        "--version", action="version", version=f"{TOOL_NAME} {TOOL_VERSION}"
+    )
+    parser.add_argument(
+        "--format",
+        choices=("table", "json"),
+        default="table",
+        help="output format (default: table)",
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_scan = sub.add_parser("scan", help="audit licenses and gate the build")
+    p_scan.add_argument(
+        "requirements", help="path to a requirements.txt-style file"
+    )
+    p_scan.set_defaults(func=_cmd_scan)
+
+    p_sbom = sub.add_parser("sbom", help="emit a CycloneDX-style SBOM")
+    p_sbom.add_argument(
+        "requirements", help="path to a requirements.txt-style file"
+    )
+    p_sbom.set_defaults(func=_cmd_sbom)
+    return parser
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    return args.func(args)
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
