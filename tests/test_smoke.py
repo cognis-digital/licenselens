@@ -1,6 +1,5 @@
 """Smoke tests for LICENSELENS. No network. Standard library only."""
 
-import json
 import os
 import sys
 import unittest

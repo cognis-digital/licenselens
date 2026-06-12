@@ -16,7 +16,7 @@
 </div>
 
 ```bash
-pip install cognis-licenselens
+pip install "git+https://github.com/cognis-digital/licenselens.git"
 licenselens scan .            # → prioritized findings in seconds
 ```
 
@@ -50,7 +50,7 @@ license risk in CI
 ## Quick start
 
 ```bash
-pip install cognis-licenselens
+pip install "git+https://github.com/cognis-digital/licenselens.git"
 licenselens --version
 licenselens scan .                       # scan current project
 licenselens scan . --format json         # machine-readable
