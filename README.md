@@ -20,6 +20,31 @@ pip install cognis-licenselens
 licenselens scan .            # → prioritized findings in seconds
 ```
 
+## Usage — step by step
+
+1. **Install** (Python 3.8+, stdlib only):
+   ```bash
+   pip install licenselens
+   ```
+2. **Scan a requirements file** against the built-in license policy and gate the build:
+   ```bash
+   licenselens scan requirements.txt
+   ```
+   Exits `0` when the gate passes, `1` on forbidden/unknown licenses, `2` on IO errors.
+3. **Read the output as JSON** for dashboards or policy reporting:
+   ```bash
+   licenselens --format json scan requirements.txt | jq '.counts, .findings[]'
+   ```
+4. **Emit a CycloneDX-style SBOM** for the same dependency set:
+   ```bash
+   licenselens --format json sbom requirements.txt > sbom.json
+   ```
+5. **Gate CI** — fail the pipeline on a license violation, attach the SBOM as an artifact:
+   ```bash
+   licenselens scan requirements.txt && licenselens --format json sbom requirements.txt > sbom.json
+   ```
+
+
 ## Contents
 
 - [Why licenselens?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
