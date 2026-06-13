@@ -20,6 +20,12 @@ pip install "git+https://github.com/cognis-digital/licenselens.git"
 licenselens scan .            # → prioritized findings in seconds
 ```
 
+<!-- cognis:layman:start -->
+## What is this?
+
+LicenseLens checks every library your Python project depends on and tells you whether its license is safe for you to use. It reads your requirements.txt, looks up each package's license, and flags anything that is restricted (like GPL software) or unknown — so you can catch legal problems before they reach production. It runs in seconds with no internet connection and works in automated CI pipelines as well as on the command line. It is aimed at software developers and teams who want a fast, no-fuss way to stay on top of open-source license compliance.
+<!-- cognis:layman:end -->
+
 ## Contents
 
 - [Why licenselens?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
@@ -47,6 +53,42 @@ license risk in CI
 <div align="right"><a href="#top">↑ back to top</a></div>
 
 <a name="quick-start"></a>
+<!-- cognis:install:start -->
+## Install
+
+`licenselens` is source-available (not published to PyPI) — every method below installs
+straight from GitHub. Pick whichever you prefer; the one-line scripts auto-detect
+the best tool available on your machine.
+
+**One-liner (Linux / macOS):**
+```sh
+curl -fsSL https://raw.githubusercontent.com/cognis-digital/licenselens/HEAD/install.sh | sh
+```
+
+**One-liner (Windows PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/cognis-digital/licenselens/HEAD/install.ps1 | iex
+```
+
+**Or install manually — any one of:**
+```sh
+pipx install "git+https://github.com/cognis-digital/licenselens.git"     # isolated (recommended)
+uv tool install "git+https://github.com/cognis-digital/licenselens.git"  # uv
+pip install "git+https://github.com/cognis-digital/licenselens.git"      # pip
+```
+
+**From source:**
+```sh
+git clone https://github.com/cognis-digital/licenselens.git
+cd licenselens && pip install .
+```
+
+Then run:
+```sh
+licenselens --help
+```
+<!-- cognis:install:end -->
+
 ## Quick start
 
 ```bash
