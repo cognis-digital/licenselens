@@ -5,19 +5,39 @@ Reads JSON findings on stdin and POSTs them to a URL (SIEM/Slack/Jira bridge).
 Usage:  <tool> scan . --format json | python integrations/webhook.py --url URL
 """
 from __future__ import annotations
-import argparse, sys, urllib.request
+
+import argparse
+import sys
+import urllib.request
+
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--url", required=True)
+    ap.add_argument("--url", required=True, help="destination URL")
     ap.add_argument("--header", action="append", default=[], help="Key: Value")
     args = ap.parse_args()
+
+    if not args.url.startswith(("http://", "https://")):
+        print(
+            f"error: --url must start with http:// or https://: {args.url!r}",
+            file=sys.stderr,
+        )
+        return 2
+
     payload = sys.stdin.read().encode("utf-8")
+    if not payload:
+        print("error: no data on stdin — nothing to post", file=sys.stderr)
+        return 2
+
     req = urllib.request.Request(args.url, data=payload, method="POST")
     req.add_header("Content-Type", "application/json")
     for h in args.header:
         k, _, v = h.partition(":")
-        req.add_header(k.strip(), v.strip())
+        k = k.strip()
+        if not k:
+            print(f"warning: skipping malformed header {h!r}", file=sys.stderr)
+            continue
+        req.add_header(k, v.strip())
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
             print(f"posted {len(payload)} bytes -> {r.status}")

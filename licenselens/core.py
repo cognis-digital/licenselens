@@ -16,6 +16,9 @@ import re
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional, Tuple
 
+TOOL_NAME = "licenselens"
+TOOL_VERSION = "0.1.0"
+
 # --- License normalization -------------------------------------------------
 
 # Map of messy real-world license strings -> canonical SPDX id.
@@ -276,10 +279,19 @@ def scan_project(
     policy: Optional[Dict[str, List[str]]] = None,
     search_root: Optional[str] = None,
 ) -> ScanResult:
-    """Scan a requirements file and classify every dependency's license."""
+    """Scan a requirements file and classify every dependency's license.
+
+    Raises:
+        OSError: if the requirements file cannot be opened or read.
+        ValueError: if ``requirements_path`` is empty/None.
+    """
+    if not requirements_path:
+        raise ValueError("requirements_path must be a non-empty string")
     policy = policy or DEFAULT_POLICY
-    with open(requirements_path, "r", encoding="utf-8") as fh:
-        deps = parse_requirements(fh.read())
+    # Raises OSError if path does not exist or is not readable.
+    with open(requirements_path, "r", encoding="utf-8", errors="replace") as fh:
+        text = fh.read()
+    deps = parse_requirements(text)
     root = search_root or os.path.dirname(os.path.abspath(requirements_path))
 
     findings: List[Finding] = []
@@ -329,7 +341,9 @@ def build_sbom(result: ScanResult) -> dict:
         "specVersion": "1.5",
         "version": 1,
         "metadata": {
-            "tools": [{"vendor": "licenselens", "name": TOOL_NAME, "version": TOOL_VERSION}]
+            "tools": [  # noqa: E501
+                {"vendor": "licenselens", "name": TOOL_NAME, "version": TOOL_VERSION}
+            ]
         },
         "components": components,
     }
