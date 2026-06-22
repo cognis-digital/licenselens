@@ -1,0 +1,11 @@
+# Data-science / ML training environment.
+# All packages here are BSD/Apache/MIT permissive - this is the "happy path".
+numpy==1.26.4             # license: BSD-3-Clause
+pandas==2.2.2             # license: BSD-3-Clause
+scikit-learn==1.5.0       # license: BSD-3-Clause
+scipy==1.13.1             # license: BSD-3-Clause
+matplotlib==3.9.0         # license: PSF-2.0
+jupyterlab==4.2.1         # license: BSD-3-Clause
+pyarrow==16.1.0           # license: Apache-2.0
+xgboost==2.0.3            # license: Apache-2.0
+joblib==1.4.2             # license: BSD-3-Clause

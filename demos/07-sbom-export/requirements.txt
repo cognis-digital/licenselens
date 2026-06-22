@@ -1,0 +1,7 @@
+# A small CLI tool whose dependency set we want to publish as an SBOM
+# (Software Bill of Materials) for supply-chain transparency / compliance.
+click==8.1.7              # license: BSD-3-Clause
+rich==13.7.0             # license: MIT
+typer==0.12.3            # license: MIT
+platformdirs==4.2.2      # license: MIT
+packaging==24.0          # license: Apache-2.0

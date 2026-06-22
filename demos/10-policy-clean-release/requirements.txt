@@ -1,0 +1,5 @@
+# No inline overrides here on purpose. The licenses are resolved from the
+# installed package metadata under ./site-packages (the second resolution tier).
+requests==2.32.3
+click==8.1.7
+colorama==0.4.6

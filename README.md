@@ -43,6 +43,35 @@ licenselens scan .            # → prioritized findings in seconds
    ```bash
    licenselens scan requirements.txt && licenselens --format json sbom requirements.txt > sbom.json
    ```
+6. **Upload findings to code-scanning** — emit a SARIF 2.1.0 log for the GitHub
+   Security tab / PR annotations:
+   ```bash
+   licenselens --format sarif scan requirements.txt > licenselens.sarif
+   ```
+
+
+## Demos
+
+Runnable, real-use-case scenarios live in [`demos/`](demos/). Each folder has a
+`requirements.txt` in the tool's real input format plus a `SCENARIO.md` that
+explains where the data came from, the exact command, and how to act on the
+result.
+
+| Demo | Scenario | Outcome |
+|---|---|---|
+| [`01-basic`](demos/01-basic/) | Mixed requirements with one GPL + one unknown | gate FAIL (exit 1) |
+| [`04-fastapi-service`](demos/04-fastapi-service/) | Production FastAPI stack, one LGPL driver | gate PASS, 1 warn |
+| [`05-data-science`](demos/05-data-science/) | NumPy/pandas/sklearn permissive stack | gate PASS, clean |
+| [`06-agpl-violation`](demos/06-agpl-violation/) | AGPL + proprietary deps in a SaaS backend | gate FAIL (exit 1) |
+| [`07-sbom-export`](demos/07-sbom-export/) | Publish a CycloneDX 1.5 SBOM | exit 0 |
+| [`08-sarif-codescan`](demos/08-sarif-codescan/) | SARIF 2.1.0 for GitHub code-scanning | warn+error results |
+| [`09-unpinned-unknowns`](demos/09-unpinned-unknowns/) | No overrides, no metadata → all UNKNOWN | gate FAIL (exit 1) |
+| [`10-policy-clean-release`](demos/10-policy-clean-release/) | Resolve licenses from installed `.dist-info` metadata | gate PASS, source=metadata |
+
+```bash
+python -m licenselens scan demos/04-fastapi-service/requirements.txt
+python -m licenselens --format sarif scan demos/08-sarif-codescan/requirements.txt
+```
 
 
 ## Contents
@@ -61,11 +90,12 @@ license risk in CI
 <a name="features"></a>
 ## Features
 
-- ✅ Normalize License
-- ✅ Classify
-- ✅ Parse Requirements
-- ✅ Scan Project
-- ✅ Build Sbom
+- ✅ Normalize messy license strings → canonical SPDX ids
+- ✅ Classify against an allow / warn / forbid policy (UNKNOWN = risk)
+- ✅ Parse `requirements.txt` with inline `# license:` overrides
+- ✅ Resolve licenses from installed `*.dist-info/METADATA` (PEP 566)
+- ✅ Gate CI with exit codes (0 pass · 1 violation · 2 IO error)
+- ✅ Export **CycloneDX 1.5 SBOM** and **SARIF 2.1.0** for code-scanning
 - ✅ Runs on Linux/macOS/Windows · Docker · devcontainer
 - ✅ Ports in Python, JavaScript, Go, and Rust (`ports/`)
 

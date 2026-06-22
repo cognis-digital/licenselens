@@ -1,0 +1,12 @@
+# Production FastAPI service - pinned runtime dependencies.
+# Licenses below are pinned via override comments so the gate is reproducible
+# in CI even when package metadata is not installed in the runner.
+fastapi==0.111.0          # license: MIT
+starlette==0.37.2         # license: BSD-3-Clause
+pydantic==2.7.1           # license: MIT
+uvicorn==0.29.0           # license: BSD-3-Clause
+httpx==0.27.0             # license: BSD-3-Clause
+sqlalchemy==2.0.30        # license: MIT
+psycopg2-binary==2.9.9    # license: LGPL-3.0
+redis==5.0.4              # license: MIT
+python-jose==3.3.0        # license: MIT

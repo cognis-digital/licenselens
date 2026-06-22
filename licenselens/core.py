@@ -16,6 +16,25 @@ import re
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional, Tuple
 
+TOOL_NAME = "licenselens"
+
+
+def _read_version() -> str:
+    """Resolve the tool version from the repo-root VERSION file, else default."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidate = os.path.join(os.path.dirname(here), "VERSION")
+    try:
+        with open(candidate, "r", encoding="utf-8") as fh:
+            v = fh.read().strip()
+            if v:
+                return v
+    except OSError:
+        pass
+    return "0.1.0"
+
+
+TOOL_VERSION = _read_version()
+
 # --- License normalization -------------------------------------------------
 
 # Map of messy real-world license strings -> canonical SPDX id.
@@ -332,4 +351,104 @@ def build_sbom(result: ScanResult) -> dict:
             "tools": [{"vendor": "licenselens", "name": TOOL_NAME, "version": TOOL_VERSION}]
         },
         "components": components,
+    }
+
+
+# --- SARIF -----------------------------------------------------------------
+
+# Map our risk buckets to SARIF result levels. SARIF defines exactly four
+# levels: "none", "note", "warning", "error". "forbid"/"unknown" findings are
+# build-failing, so they map to "error".
+_SARIF_LEVEL = {
+    "allow": "none",
+    "warn": "warning",
+    "forbid": "error",
+    "unknown": "error",
+}
+
+# A stable rule id per risk bucket so code-scanning UIs can group findings.
+_SARIF_RULE = {
+    "allow": ("LIC-ALLOW", "License is on the allow list"),
+    "warn": ("LIC-WARN", "Copyleft / restricted license requires review"),
+    "forbid": ("LIC-FORBID", "License is forbidden by policy"),
+    "unknown": ("LIC-UNKNOWN", "License could not be determined"),
+}
+
+
+def build_sarif(result: ScanResult, requirements_path: str = "requirements.txt") -> dict:
+    """Build a SARIF 2.1.0 log from a scan result.
+
+    SARIF (Static Analysis Results Interchange Format) is the format GitHub
+    code-scanning, Azure DevOps, and many IDEs ingest. Every dependency whose
+    license is not on the allow list becomes a SARIF ``result`` so it surfaces
+    as an annotation in the pull request / security tab.
+    """
+    from . import TOOL_NAME, TOOL_VERSION
+
+    # SARIF artifactLocation uris use forward slashes regardless of platform.
+    uri = requirements_path.replace(os.sep, "/")
+
+    rules = []
+    for risk, (rule_id, desc) in _SARIF_RULE.items():
+        rules.append(
+            {
+                "id": rule_id,
+                "name": rule_id.replace("-", ""),
+                "shortDescription": {"text": desc},
+                "defaultConfiguration": {"level": _SARIF_LEVEL[risk]},
+            }
+        )
+
+    results = []
+    for f in result.findings:
+        # Allowed licenses are compliant; do not emit noise for them.
+        if f.risk == "allow":
+            continue
+        rule_id, _ = _SARIF_RULE.get(f.risk, ("LIC-UNKNOWN", ""))
+        results.append(
+            {
+                "ruleId": rule_id,
+                "level": _SARIF_LEVEL.get(f.risk, "error"),
+                "message": {
+                    "text": (
+                        f"{f.name}=={f.version}: license '{f.license}' "
+                        f"({f.risk}) — {f.reason} [resolved via {f.source}]"
+                    )
+                },
+                "locations": [
+                    {
+                        "physicalLocation": {
+                            "artifactLocation": {"uri": uri},
+                        },
+                        "logicalLocations": [
+                            {"name": f.name, "kind": "package"}
+                        ],
+                    }
+                ],
+                "properties": {
+                    "package": f.name,
+                    "version": f.version,
+                    "license": f.license,
+                    "risk": f.risk,
+                    "source": f.source,
+                },
+            }
+        )
+
+    return {
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": TOOL_NAME,
+                        "version": TOOL_VERSION,
+                        "informationUri": "https://github.com/cognis-digital/licenselens",
+                        "rules": rules,
+                    }
+                },
+                "results": results,
+            }
+        ],
     }

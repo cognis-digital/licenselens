@@ -1,0 +1,11 @@
+# A repo wired to GitHub code-scanning. We want license problems to appear as
+# annotations in the PR and in the Security tab, via SARIF upload.
+django==5.0.6            # license: BSD-3-Clause
+celery==5.4.0            # license: BSD-3-Clause
+pillow==10.3.0           # license: MIT
+# A copyleft lib that needs human review (warn -> SARIF "warning"):
+paramiko==3.4.0          # license: LGPL-2.1
+# A forbidden dependency (forbid -> SARIF "error"):
+mysql-connector==8.4.0   # license: GPL-2.0
+# A package with no resolvable license (unknown -> SARIF "error"):
+internal-widgets==0.3.1

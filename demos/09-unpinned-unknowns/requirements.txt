@@ -1,0 +1,7 @@
+# A requirements file with NO license overrides and NO locally installed
+# package metadata next to it. licenselens cannot resolve any license, so every
+# dependency is UNKNOWN - which the default policy treats as a real risk.
+internal-auth-sdk
+legacy-billing-lib
+vendor-pdf-toolkit
+analytics-shim>=2.0

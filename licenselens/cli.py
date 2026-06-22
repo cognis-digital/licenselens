@@ -16,7 +16,7 @@ import sys
 from typing import List, Optional
 
 from . import TOOL_NAME, TOOL_VERSION
-from .core import DEFAULT_POLICY, build_sbom, scan_project
+from .core import DEFAULT_POLICY, build_sarif, build_sbom, scan_project
 
 _RISK_GLYPH = {"allow": "OK ", "warn": "WARN", "forbid": "FAIL", "unknown": "????"}
 
@@ -52,6 +52,8 @@ def _cmd_scan(args) -> int:
         return 2
     if args.format == "json":
         print(json.dumps(result.as_dict(), indent=2))
+    elif args.format == "sarif":
+        print(json.dumps(build_sarif(result, args.requirements), indent=2))
     else:
         print(_render_scan_table(result))
     return 0 if result.passed else 1
@@ -86,9 +88,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--format",
-        choices=("table", "json"),
+        choices=("table", "json", "sarif"),
         default="table",
-        help="output format (default: table)",
+        help="output format (default: table). 'sarif' applies to scan and "
+        "emits a SARIF 2.1.0 log for code-scanning UIs.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

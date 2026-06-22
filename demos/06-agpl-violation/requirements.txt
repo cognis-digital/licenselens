@@ -1,0 +1,10 @@
+# A closed-source SaaS backend. The team's policy forbids strong copyleft
+# (GPL/AGPL) because the product is distributed as a hosted service and they
+# do not want network-copyleft obligations.
+flask==3.0.3              # license: BSD-3-Clause
+gunicorn==22.0.0          # license: MIT
+requests==2.31.0          # license: Apache-2.0
+# A transitive analytics lib that slipped in under AGPL:
+grafana-client==4.0.0     # license: AGPL-3.0
+# And a vendored module the author marked as commercial-only:
+acme-reporting==1.2.0     # license: Proprietary
