@@ -17,8 +17,16 @@
 
 ```bash
 pip install cognis-licenselens
-licenselens scan .            # → prioritized findings in seconds
+licenselens scan requirements.txt          # license gate — prioritized findings in seconds
+licenselens vulncheck requirements.txt     # + offline CVE enrichment vs 262k bundled OSV vulns
 ```
+
+**What it does, concretely:** point it at a `requirements.txt`, and `licenselens`
+(1) resolves every dependency's license to a canonical SPDX id, (2) gates the
+build on an allow/warn/forbid policy, (3) emits a **CycloneDX 1.5 SBOM** and
+**SARIF 2.1.0** for code-scanning, and (4) cross-references each package against
+a **bundled, offline, ~262,000-record OSV vulnerability database** — no API key,
+no network, works air-gapped.
 
 ## Usage — step by step
 
@@ -48,6 +56,17 @@ licenselens scan .            # → prioritized findings in seconds
    ```bash
    licenselens --format sarif scan requirements.txt > licenselens.sarif
    ```
+7. **Check for known vulnerabilities** — cross-reference every dependency against
+   the bundled offline OSV database (no network, no key):
+   ```bash
+   licenselens vulncheck requirements.txt                 # report
+   licenselens vulncheck requirements.txt --fail-on high  # gate CI on high/critical
+   licenselens --format json vulncheck requirements.txt | jq '.severity_counts'
+   ```
+8. **Resolve a single CVE / GHSA / OSV id** straight from the offline DB:
+   ```bash
+   licenselens cve CVE-2021-44228
+   ```
 
 
 ## Demos
@@ -76,7 +95,7 @@ python -m licenselens --format sarif scan demos/08-sarif-codescan/requirements.t
 
 ## Contents
 
-- [Why licenselens?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
+- [Why licenselens?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [Vulnerability enrichment](#vulncheck) · [Edge / air-gap](#edge) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
 
 <a name="why"></a>
 ## Why licenselens?
@@ -96,8 +115,10 @@ license risk in CI
 - ✅ Resolve licenses from installed `*.dist-info/METADATA` (PEP 566)
 - ✅ Gate CI with exit codes (0 pass · 1 violation · 2 IO error)
 - ✅ Export **CycloneDX 1.5 SBOM** and **SARIF 2.1.0** for code-scanning
+- ✅ **Offline vulnerability enrichment** — match deps against a bundled **~262k-record OSV DB** (`vulncheck` / `cve`), no network, no key
+- ✅ **Edge / air-gap ready** — refresh the corpus from NVD/OSV/GHSA when online, then sneakernet the cache to a disconnected enclave
 - ✅ Runs on Linux/macOS/Windows · Docker · devcontainer
-- ✅ Ports in Python, JavaScript, Go, and Rust (`ports/`)
+- ✅ Ports in Python, JavaScript, Go, and Rust (`ports/`), each CI-built
 
 <div align="right"><a href="#top">↑ back to top</a></div>
 
@@ -107,22 +128,56 @@ license risk in CI
 ```bash
 pip install cognis-licenselens
 licenselens --version
-licenselens scan .                       # scan current project
-licenselens scan . --format json         # machine-readable
-licenselens scan . --fail-on high        # CI gate (non-zero exit)
+licenselens scan requirements.txt                  # license gate (table)
+licenselens --format json scan requirements.txt    # machine-readable
+licenselens --format sarif scan requirements.txt   # SARIF for code-scanning
+licenselens vulncheck requirements.txt             # offline CVE enrichment
 ```
 
 <div align="right"><a href="#top">↑ back to top</a></div>
 
 <a name="example"></a>
-## Example
+## Example — worked output
+
+### License gate
 
 ```text
-$ licenselens scan .
-  [HIGH    ] LIC-001  example finding             (./src/app.py)
-  [MEDIUM  ] LIC-002  another signal              (./config.yaml)
+$ licenselens scan requirements.txt
+RISK  NAME          VERSION  LICENSE      SOURCE
+----------------------------------------------------
+FAIL  pycopyleft    3.1.0    GPL-3.0      override
+????  mysterylib    1.0.0    UNKNOWN      unresolved
+OK    requests      2.31.0   Apache-2.0   metadata
+OK    click         8.1.7    BSD-3-Clause metadata
 
-  2 findings · risk score 5 · 38ms
+summary: 2 allowed, 0 warn, 1 forbidden, 1 unknown
+gate: FAIL
+$ echo $?
+1
+```
+
+### Offline vulnerability enrichment
+
+```text
+$ licenselens vulncheck requirements.txt --ecosystem PyPI
+SEV   NAME        VULNS  LICENSE     TOP CVE / ADVISORY
+-------------------------------------------------------
+MOD   requests       13  Apache-2.0  CVE-2014-1830: Exposure of sensitive information ...
+----  click           0  BSD-3-Clause
+
+db: 262351 records (offline) · 1 vulnerable package(s) · 13 total vuln(s)
+severity: 0 critical, 0 high, 1 moderate, 6 low, 6 unknown
+```
+
+### Single CVE lookup (offline)
+
+```text
+$ licenselens cve CVE-2021-44228
+GHSA-jfh8-c2jp-5v3q  [Maven]  severity=critical
+  aliases: CVE-2021-44228
+  packages: org.apache.logging.log4j:log4j-core, ...
+  summary: Remote code injection in Log4j
+  published: 2021-12-10T00:40:56Z
 ```
 
 <div align="right"><a href="#top">↑ back to top</a></div>
@@ -132,9 +187,68 @@ $ licenselens scan .
 
 ```mermaid
 flowchart LR
-  IN[target / manifest] --> P[licenselens<br/>checks + rules]
-  P --> OUT[findings (JSON / SARIF)]
+  REQ[requirements.txt<br/>+ # license overrides] --> PARSE[parse + resolve]
+  META[installed *.dist-info<br/>METADATA / PKG-INFO] --> PARSE
+  PARSE --> NORM[normalize → SPDX]
+  NORM --> POL[policy: allow / warn / forbid]
+  POL --> GATE[exit code gate]
+  POL --> SBOM[CycloneDX 1.5]
+  POL --> SARIF[SARIF 2.1.0]
+  PARSE --> VDB[(bundled OSV DB<br/>~262k vulns, offline)]
+  VDB --> VULN[vulncheck / cve]
 ```
+
+<div align="right"><a href="#top">↑ back to top</a></div>
+
+<a name="vulncheck"></a>
+## Offline vulnerability enrichment
+
+A license gate only answers half of a supply-chain review. `licenselens` ships
+the other half **in the box**: `cognis_vulndb.jsonl.gz`, a consolidated, compact
+**OSV corpus of ~262,000 real vulnerabilities** across PyPI, npm, Go, Maven,
+RubyGems, crates.io and NuGet — each record carrying id, CVE/GHSA aliases,
+ecosystem, summary, severity, affected packages, and publish/modify dates.
+
+```bash
+licenselens vulncheck requirements.txt                      # report
+licenselens vulncheck requirements.txt --ecosystem Maven    # match another ecosystem
+licenselens vulncheck requirements.txt --fail-on critical   # CI gate floor
+licenselens cve CVE-2021-44228                              # resolve one id
+licenselens --format json vulncheck requirements.txt        # machine-readable
+```
+
+- **Fully offline / air-gapped** — no API key, no network call, ever. The DB is
+  the moment-of-clone baseline.
+- **Namespace-tolerant matching** — a bare `log4j-core` resolves the Maven
+  `org.apache.logging.log4j:log4j-core` record without inventing data.
+- **No fabricated data** — a package with no real record reports **zero** vulns.
+- **Severity-floor gate** — `--fail-on {off,any,low,moderate,high,critical}`
+  (default `off` = report-only).
+
+<div align="right"><a href="#top">↑ back to top</a></div>
+
+<a name="edge"></a>
+## Edge / air-gap refresh
+
+The bundled DB is the offline baseline. When you *do* have connectivity, refresh
+and extend it from upstream, then carry the cache to a disconnected enclave with
+`licenselens.datafeeds` (`licenselens-feeds`):
+
+```bash
+# online side: pull from CISA-KEV / EPSS / OSV / NVD / GHSA (keyless, HTTPS)
+licenselens-feeds list --domain vuln
+licenselens-feeds update cisa-kev epss osv
+licenselens-feeds snapshot-export feeds.tar.gz   # tar the cache (sneakernet)
+
+# air-gapped side: import the snapshot; everything then serves from disk
+licenselens-feeds snapshot-import feeds.tar.gz
+licenselens-feeds get cisa-kev --offline
+```
+
+The catalog (`data_feeds_2026.json`) is real, recent, mostly-keyless intelligence
+feeds. `offline=True` serves cache only and never touches the network. Bulk CVE
+harvest (`licenselens-feeds bulk nvd-cve`) paginates NVD 2.0 / GHSA to grow the
+corpus well past the bundled baseline.
 
 <div align="right"><a href="#top">↑ back to top</a></div>
 
@@ -218,6 +332,21 @@ PRs, new rules, and demo scenarios are welcome under the collaboration-pull mode
 `{}` composes with the 300+ tool Cognis suite — JSON in/out and a shared
 OpenAI-compatible `/v1` backbone. See **[INTEROP.md](INTEROP.md)** for the
 suite map, composition patterns, and reference stacks.
+
+## Scope, authorization & safety
+
+`licenselens` is a **passive, offline, defensive** tool. It reads manifests and
+package metadata on disk and matches them against a **bundled** vulnerability
+database. It performs **no active scanning, no network probing, and no exploit
+behavior** — `scan`, `vulncheck` and `cve` never touch the network. The optional
+`licenselens-feeds` refresher only fetches **public, authorized intelligence
+feeds** over HTTPS to update your local cache, and supports an explicit
+`--offline` mode that serves the cache exclusively. No data is fabricated: every
+vulnerability shown is a real OSV/CVE/GHSA record from the bundled corpus.
+
+Use it on code and dependency manifests **you own or are authorized to audit**.
+
+<div align="right"><a href="#top">↑ back to top</a></div>
 
 ## License
 

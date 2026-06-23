@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cognis-licenselens"
-version = "0.1.1"
-description = "Dependency license + SBOM gate, developer-CLI first"
+version = "0.4.0"
+description = "Dependency license + SBOM gate with offline CVE enrichment, developer-CLI first"
 authors = [{name = "Cognis Digital", email = "suite@cognis.digital"}]
 license = {text = "LicenseRef-COCL-1.0"}
 requires-python = ">=3.10"
@@ -30,10 +30,21 @@ Repository = "https://github.com/cognis-digital/licenselens"
 
 [project.scripts]
 "licenselens-emit" = "licenselens.connect:emit_main"
+"licenselens-feeds" = "licenselens.datafeeds:main"
 licenselens = "licenselens.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["licenselens"]
+# Ship the offline vulnerability DB + feed catalog inside the wheel so a pip
+# install works fully air-gapped with no extra download step.
+artifacts = [
+    "licenselens/cognis_vulndb.jsonl.gz",
+    "licenselens/data_feeds_2026.json",
+]
+
+[tool.hatch.build.targets.wheel.force-include]
+"licenselens/cognis_vulndb.jsonl.gz" = "licenselens/cognis_vulndb.jsonl.gz"
+"licenselens/data_feeds_2026.json" = "licenselens/data_feeds_2026.json"
 
 [tool.hatch.metadata]
 allow-direct-references = true

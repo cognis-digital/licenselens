@@ -1,5 +1,25 @@
 # Sources
 
+## Vulnerability & license data (used by `vulncheck` / `cve`)
+
+`licenselens` ships and refreshes from **real, public** data only — no fabricated
+records.
+
+- **Bundled OSV corpus** — `licenselens/cognis_vulndb.jsonl.gz`, a consolidated
+  ~262,000-record snapshot of [OSV.dev](https://osv.dev) advisories across PyPI,
+  npm, Go, Maven, RubyGems, crates.io and NuGet. Loaded **fully offline**.
+- **License data** — resolved from inline `# license:` overrides and installed
+  `*.dist-info/METADATA` (PEP 566), normalized to canonical SPDX ids.
+- **Edge/air-gap refresh feeds** (`licenselens-feeds`, keyless HTTPS):
+  - CISA Known Exploited Vulnerabilities (KEV)
+  - FIRST EPSS exploit-probability scores
+  - OSV.dev query + bulk ecosystem exports
+  - NIST NVD CVE API 2.0
+  - GitHub Security Advisories (GHSA)
+
+See [`data_feeds_2026.json`](licenselens/data_feeds_2026.json) for the full,
+domain-tagged catalog.
+
 <!-- cognis-2026-live-sources -->
 
 ## Live 2026 sources (auto-expanded)

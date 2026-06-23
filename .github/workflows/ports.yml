@@ -1,0 +1,63 @@
+name: ports
+on:
+  push:
+    paths:
+      - "ports/**"
+      - ".github/workflows/ports.yml"
+  pull_request:
+    paths:
+      - "ports/**"
+      - ".github/workflows/ports.yml"
+permissions:
+  contents: read
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+      - name: build + test (go)
+        working-directory: ports/go
+        run: |
+          go build ./...
+          go test ./... -v
+      - name: smoke (go)
+        working-directory: ports/go
+        run: |
+          printf 'good==1  # license: MIT\nbad==2  # license: GPL-3.0\n' > /tmp/req.txt
+          go run . --format json /tmp/req.txt || test $? -eq 1
+
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: build + test (rust)
+        working-directory: ports/rust
+        run: |
+          cargo build
+          cargo test
+      - name: smoke (rust)
+        working-directory: ports/rust
+        run: |
+          printf 'good==1  # license: MIT\nbad==2  # license: GPL-3.0\n' > /tmp/req.txt
+          cargo run -- --format json /tmp/req.txt || test $? -eq 1
+
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: test (node)
+        working-directory: ports/javascript
+        run: node --test
+      - name: smoke (node)
+        working-directory: ports/javascript
+        run: |
+          printf 'good==1  # license: MIT\nbad==2  # license: GPL-3.0\n' > /tmp/req.txt
+          node index.js --format json /tmp/req.txt || test $? -eq 1

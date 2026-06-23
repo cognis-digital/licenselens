@@ -1,9 +1,12 @@
 {
   "name": "@cognis/licenselens",
-  "version": "0.2.0",
-  "description": "JavaScript port of licenselens (Cognis Neural Suite)",
+  "version": "0.3.0",
+  "description": "JavaScript port of licenselens — dependency license gate (Cognis Neural Suite)",
   "bin": {
     "licenselens": "index.js"
+  },
+  "scripts": {
+    "test": "node --test"
   },
   "license": "LicenseRef-COCL-1.0",
   "type": "module"
