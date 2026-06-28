@@ -1,0 +1,23 @@
+$ licenselens-emit --help
+
+usage: licenselens [-h] [--version] [--format {table,json,sarif}]
+                   {scan,sbom,vulncheck,cve} ...
+
+Dependency license + SBOM gate for CI (stdlib only, zero install).
+
+positional arguments:
+  {scan,sbom,vulncheck,cve}
+    scan                audit licenses and gate the build
+    sbom                emit a CycloneDX-style SBOM
+    vulncheck           enrich the dependency set with known vulnerabilities
+                        (offline)
+    cve                 resolve a CVE / GHSA / OSV id from the bundled DB
+                        (offline)
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --format {table,json,sarif}
+                        output format (default: table). 'sarif' applies to
+                        scan and emits a SARIF 2.1.0 log for code-scanning
+                        UIs.

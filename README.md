@@ -28,6 +28,76 @@ build on an allow/warn/forbid policy, (3) emits a **CycloneDX 1.5 SBOM** and
 a **bundled, offline, ~262,000-record OSV vulnerability database** — no API key,
 no network, works air-gapped.
 
+
+<!-- cognis:example:start -->
+## 🔎 Example output
+
+Real, reproducible output from the tool — runs offline:
+
+```console
+$ licenselens-emit --version
+licenselens 0.4.0
+```
+
+```console
+$ licenselens-emit --help
+usage: licenselens [-h] [--version] [--format {table,json,sarif}]
+                   {scan,sbom,vulncheck,cve} ...
+
+Dependency license + SBOM gate for CI (stdlib only, zero install).
+
+positional arguments:
+  {scan,sbom,vulncheck,cve}
+    scan                audit licenses and gate the build
+    sbom                emit a CycloneDX-style SBOM
+    vulncheck           enrich the dependency set with known vulnerabilities
+                        (offline)
+    cve                 resolve a CVE / GHSA / OSV id from the bundled DB
+                        (offline)
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --format {table,json,sarif}
+                        output format (default: table). 'sarif' applies to
+                        scan and emits a SARIF 2.1.0 log for code-scanning
+                        UIs.
+```
+
+> Blocks above are real `licenselens` output — reproduce them from a clone.
+
+**Sample result format** _(illustrative values — run on your own data for real findings):_
+
+```
+{
+"timestamp": "2023-02-16T14:30:00Z",
+"platform": "stix",
+"data": {
+"indicators": [
+{
+"id": "indicator-12345",
+"type": "ip-dns",
+"value": "1.2.3.4"
+}
+],
+"observables": [
+{
+"id": "observable-67890",
+"type": "file-hash",
+"value": "abc123"
+}
+]
+},
+"report": {
+"id": "report-1234567890",
+"name": "Example Report",
+"description": "This is an example report."
+}
+}
+```
+
+<!-- cognis:example:end -->
+
 ## Usage — step by step
 
 1. **Install** (Python 3.8+, stdlib only):
