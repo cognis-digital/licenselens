@@ -217,7 +217,7 @@ RISK  NAME          VERSION  LICENSE      SOURCE
 ----------------------------------------------------
 FAIL  pycopyleft    3.1.0    GPL-3.0      override
 ????  mysterylib    1.0.0    UNKNOWN      unresolved
-OK    requests      2.31.0   Apache-2.0   metadata
+OK    requests      2.31.0   COCL (Cognis Open Collaboration License)   metadata
 OK    click         8.1.7    BSD-3-Clause metadata
 
 summary: 2 allowed, 0 warn, 1 forbidden, 1 unknown
@@ -232,7 +232,7 @@ $ echo $?
 $ licenselens vulncheck requirements.txt --ecosystem PyPI
 SEV   NAME        VULNS  LICENSE     TOP CVE / ADVISORY
 -------------------------------------------------------
-MOD   requests       13  Apache-2.0  CVE-2014-1830: Exposure of sensitive information ...
+MOD   requests       13  COCL (Cognis Open Collaboration License)  CVE-2014-1830: Exposure of sensitive information ...
 ----  click           0  BSD-3-Clause
 
 db: 262351 records (offline) · 1 vulnerable package(s) · 13 total vuln(s)
