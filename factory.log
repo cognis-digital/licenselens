@@ -1,0 +1,23 @@
+[2026-07-15 00:45:21] === enhance · licenselens · words=120000 loc>=10000 langs=9 push=True ===
+[2026-07-15 00:45:26] phase DOCS — longform 120000-word corpus -> docs/corpus/
+[2026-07-15 08:55:35] phase POLYGLOT — expanding to >= 10000 LOC across 9 languages
+[2026-07-15 08:55:50]   facets: ['license_parser', 'sbom_generator', 'policy_engine', 'cli_interface', 'cache_layer', 'reporter']
+[2026-07-15 08:59:33]   +polyglot/python/license_parser.py  (loc now ~3639)
+[2026-07-15 09:04:59]   +polyglot/go/license_parser.go  (loc now ~3931)
+[2026-07-15 09:10:37]   +polyglot/rust/license_parser.rs  (loc now ~4385)
+[2026-07-15 09:13:04]   +polyglot/typescript/license_parser.ts  (loc now ~4423)
+[2026-07-15 09:17:04]   +polyglot/c/license_parser.c  (loc now ~4853)
+[2026-07-15 09:20:56]   +polyglot/cpp/license_parser.cpp  (loc now ~5062)
+[2026-07-15 09:22:48]   +polyglot/java/license_parser.java  (loc now ~5487)
+[2026-07-15 09:25:04]   +polyglot/ruby/license_parser.rb  (loc now ~5858)
+[2026-07-15 09:27:39]   +polyglot/csharp/license_parser.cs  (loc now ~6300)
+[2026-07-15 09:29:43]   +polyglot/python/sbom_generator.py  (loc now ~6694)
+[2026-07-15 09:30:52]   +polyglot/go/sbom_generator.go  (loc now ~6961)
+[2026-07-15 09:31:21]   +polyglot/rust/sbom_generator.rs  (loc now ~7066)
+[2026-07-15 09:33:23]   +polyglot/typescript/sbom_generator.ts  (loc now ~7532)
+[2026-07-15 09:35:26]   +polyglot/c/sbom_generator.c  (loc now ~7982)
+[2026-07-15 09:37:26]   +polyglot/cpp/sbom_generator.cpp  (loc now ~8410)
+[2026-07-15 09:38:27]   +polyglot/java/sbom_generator.java  (loc now ~8608)
+[2026-07-15 09:40:29]   +polyglot/ruby/sbom_generator.rb  (loc now ~9106)
+[2026-07-15 09:42:29]   +polyglot/csharp/sbom_generator.cs  (loc now ~9625)
+[2026-07-15 09:44:30]   +polyglot/python/policy_engine.py  (loc now ~10113)
