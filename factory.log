@@ -21,3 +21,8 @@
 [2026-07-15 09:40:29]   +polyglot/ruby/sbom_generator.rb  (loc now ~9106)
 [2026-07-15 09:42:29]   +polyglot/csharp/sbom_generator.cs  (loc now ~9625)
 [2026-07-15 09:44:30]   +polyglot/python/policy_engine.py  (loc now ~10113)
+[2026-07-15 09:44:33] === done · licenselens · loc=10113 · {'committed': True, 'pushed': True, 'push_err': ''} ===
+[2026-09-04 16:13:26] === enhance · licenselens · words=120000 loc>=10000 langs=9 push=True ===
+[2026-09-04 16:13:31] phase DOCS — longform 120000-word corpus -> docs/corpus/
+[2026-09-05 01:42:04] phase POLYGLOT — expanding to >= 10000 LOC across 9 languages
+[2026-09-05 01:43:55]   facets: ['license_parser', 'license_policy_engine', 'sbom_generator', 'sbom_validator', 'cli_interface', 'gate_executor']
